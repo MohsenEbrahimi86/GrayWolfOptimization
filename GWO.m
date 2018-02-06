@@ -71,22 +71,33 @@ convergence_curve=zeros(1,Num_Of_Iterations);
 
 %Define prey position
 Prey.Position = (Alpha.Position+Beta.Position+Delta.Position)/3;     %location of prey/optimum/
-a = 2;
-A = 4;
-C = 2*rand();
+a = 2*eye(3,1);
+A = 4*eye(3,1);
+C = 2*rand(3,1);
 
 %% Main loop
+Num_Of_Curve_Iteration = 5;
 
-for l = 1:Num_Of_Iterations
+for l = 1:Num_Of_Curve_Iteration 
     
-    for it=1:Num_Of_Iterations
+    for it = 1:Num_Of_Iterations
         
         %Update the position of searchagents
         for i = 1:Num_Of_Wolves
-            searchagent(i).Position = UpdatePos(Prey,searchagent(i,:),a);
+            searchagent(i).Position = UpdatePos(Prey,searchagent(i,:), C, A);
         end
         
-        a = 2 - it*(2 / Num_Of_Iterations);       %a decrease linearly from 2 to 0
+        a  = 2 - it*(2 / Num_Of_Iterations);       %a decrease linearly from 2 to 0
+        r1 = rand();                   % r1 is a random number in [0,1]
+        r2 = rand();                   % r2 is a random number in [0,1]
+        
+        A(1) = 2*a*r1-a;                 % Equation (3.3)
+        A(2) = 2*a*r1-a;                 % Equation (3.3)
+        A(3) = 2*a*r1-a;                 % Equation (3.3)
+        
+        C(1) = 2*r2;                     % Equation (3.4)
+        C(2) = 2*r2;                     % Equation (3.4)
+        C(3) = 2*r2;                     % Equation (3.4)
         
         %Check boundaries
         for i = 1:Num_Of_Wolves
