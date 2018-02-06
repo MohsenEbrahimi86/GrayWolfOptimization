@@ -89,9 +89,10 @@ for l = 1:Num_Of_Iterations
         a = 2 - it*(2 / Num_Of_Iterations);       %a decrease linearly from 2 to 0
         
         %Check boundaries
-        %         searchagent(i).Position = max(searchagent(i).Position,lb);
-        %         searchagent(i).Position = min(searchagent(i).Position,ub);
-        
+        for i = 1:Num_Of_Wolves
+            searchagent(i).Position = max(searchagent(i).Position,lb);
+            searchagent(i).Position = min(searchagent(i).Position,ub);
+        end
         %Evaluate Fitness
         for i = 1:Num_Of_Wolves
             searchagent(i) = object(searchagent(i));
@@ -106,7 +107,7 @@ for l = 1:Num_Of_Iterations
         
         %Update Alpha, Beta & Delta solution
         
-        disp(['in iteration= ' num2str(it) 'Best Reliability=' num2str(Alpha.Reli)]);
+        disp(['in iteration= ' num2str(it) ' Best Reliability=' num2str(Alpha.Reli)]);
     end
     convergence_curve(l)=Alpha.Reli;
 end
