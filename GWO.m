@@ -23,8 +23,8 @@ ub=[0.00069314,0.00069314,0.00069314,0.00069314,0.00069314;5,5,5,5,5]; % upper b
 
 %% GWO Parameters
 
-searchagents_no=30;             % Number of search agents
-max_iteration=500;               % Maximum number of generation
+Num_Of_Wolves = 30;             % Number of search agents
+Num_Of_Iterations = 500;               % Maximum number of generation
 
 %% initialization
 
@@ -34,20 +34,21 @@ empty_individual.SubReli=[];
 empty_individual.ri=[];
 empty_individual.slack=[];
 
-searchagent=repmat(empty_individual,[searchagents_no,1]);
+searchagent = repmat(empty_individual,[Num_Of_Wolves,1]);
 
 %% Initialize position
 
-for i=1:searchagents_no
+lambda = 69314;
+m1 = 100000000;
+for i=1:Num_Of_Wolves
     
-    firstRow=(rand(1,5)*69314)/100000000;   %first row of position-landa(i)
-    secondRow=randi([1,5],1,5);             %second row of position-n(i) 
+    r_i_s = (rand(1,5)*lambda)/m1;   %first row of position-landa(i)
+    n_i_s = randi([1,5],1,5);             %second row of position-n(i)
     
-    searchagent(i).Position=cat(1,firstRow,secondRow);
+    searchagent(i).Position=cat(1, r_i_s, n_i_s);
     
     %Evaluation
-    
-    searchagent(i)=object(searchagent(i));
+    searchagent(i) = object(searchagent(i));
 end
 
 % sort searchagents_Reliabilities
@@ -58,74 +59,58 @@ searchagent=searchagent(sortorder);
 
 % find Alpha, Beta & Delta
 
-Alpha=searchagent(1);           %Alpha means best solution
-Beta=searchagent(2);            %Beta means second best solution
-Delta=searchagent(3);           %Delta means third best solution
+Alpha = searchagent(1);           %Alpha means best solution
+Beta  = searchagent(2);           %Beta means second best solution
+Delta = searchagent(3);           %Delta means third best solution
 
-% store best position 
+% store best position
 
-bestpos=zeros(1,max_iteration);          %best position
+bestpos=zeros(1,Num_Of_Iterations);          %best position
 
-convergence_curve=zeros(1,max_iteration);
+convergence_curve=zeros(1,Num_Of_Iterations);
 
-l=0;                             %loop counter
+%Define prey position
+Prey.Position = (Alpha.Position+Beta.Position+Delta.Position)/3;     %location of prey/optimum/
+a = 2;
+A = 4;
+C = 2*rand();
 
 %% Main loop
 
-while l<max_iteration
+for l = 1:Num_Of_Iterations
     
-        for it=1:max_iteration
-        a=2-it*((2)/max_iteration);       %a decrease linearly from 2 to 0
-        
-        %Define prey position
-        
-        Prey.Position=(Alpha.Position+Beta.Position+Delta.Position)./3;     %location of prey/optimum/
+    for it=1:Num_Of_Iterations
         
         %Update the position of searchagents
-        
-        for i=1:searchagents_no
-        
-        %Update the position of Alpha & Beta & Delta
-        
-            newposAlpha=UpdatePos(Prey,searchagent(i,:),a);
-            newposBeta=UpdatePos(Prey,searchagent(i,:),a);
-            newposDelta=UpdatePos(Prey,searchagent(i,:),a);
-            
-            %Update the position of other searchagents
-            
-            searchagent(i).position=(newposAlpha+newposBeta+newposDelta)./3;
-            
-        end
-            
-            %Check boundaries
-            
-            searchagent(i).Position=max(searchagent(i).position,lb);
-            searchagent(i).Position=min(searchagent(i).position,ub);
-            
-            %Evaluate
-            
-            searchagent(i)=object(searchagent(i));
-            
-            %Update Alpha, Beta & Delta solution
-            
-            if searchagent(i).Reli>Alpha.Reli
-                Alpha=searchagent(i);
-                
-            elseif searchagent(i).Reli<Alpha.Reli && searchagent(i).Reli>Beta.Reli
-                Beta=searchagent(i);
-                
-            elseif searchagent(i).Reli<Alpha.Reli && searchagent(i).Reli<Beta.Reli && searchagent(i).Reli>Delta.Reli
-                Delta=searchagent(i);
-                
-            end           
-                                   
-            disp(['in iteration= ' num2str(it) 'Best Reliability=' num2str(Alpha.Reli)]);
+        for i = 1:Num_Of_Wolves
+            searchagent(i).Position = UpdatePos(Prey,searchagent(i,:),a);
         end
         
-        l=l+1;
-        convergence_curve(l)=Alpha.Reli;
+        a = 2 - it*(2 / Num_Of_Iterations);       %a decrease linearly from 2 to 0
+        
+        %Check boundaries
+        %         searchagent(i).Position = max(searchagent(i).Position,lb);
+        %         searchagent(i).Position = min(searchagent(i).Position,ub);
+        
+        %Evaluate Fitness
+        for i = 1:Num_Of_Wolves
+            searchagent(i) = object(searchagent(i));
+        end
+        Reliabilities = [searchagent.Reli];
+        [Reliabilities, sortorder] = sort(Reliabilities);
+        searchagent = searchagent(sortorder);
+        
+        Alpha = searchagent(1);
+        Beta  = searchagent(2);
+        Delta = searchagent(3);
+        
+        %Update Alpha, Beta & Delta solution
+        
+        disp(['in iteration= ' num2str(it) 'Best Reliability=' num2str(Alpha.Reli)]);
+    end
+    convergence_curve(l)=Alpha.Reli;
 end
-          
+
 %% Results
 
 toc(tstart);
